@@ -1,25 +1,54 @@
 package org.smart4j.chapter2.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.smart4j.chapter2.helper.DataBaseHelper;
 import org.smart4j.chapter2.model.Customer;
-import org.smart4j.chapter2.util.PropUtil;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Created by 魂之挽歌 on 2017/11/21.
  */
 public class CustomerService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
     /**
      * 获取客户列表
      * @param keyword
      * @return
      */
     public List<Customer> getCustomerList (String keyword){
-        // TODO: 2017/11/21
-        return  null;
+        Connection conn = null;
+        List<Customer> customerList = new ArrayList<>();
+        try {
+            String sql = "select * from customer";
+            conn = DataBaseHelper.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()){
+                Customer customer = new Customer();
+                customer.setId(rs.getLong("id"));
+                customer.setName(rs.getString("name"));
+                customer.setContact(rs.getString("contact"));
+                customer.setTelephone(rs.getString("telephone"));
+                customer.setEmail(rs.getString("email"));
+                customer.setRemark(rs.getString("remark"));
+                customerList.add(customer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOGGER.error("excute sql failure",e);
+        }finally {
+            DataBaseHelper.closeConnection(conn);
+        }
+        return  customerList;
     }
 
     /**
