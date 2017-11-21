@@ -52,6 +52,15 @@ public class CustomerService {
     }
 
     /**
+     * 获取客户列表之简单方法（dbUtils）
+     */
+    public List<Customer> getCustomerList(){
+        Connection conn = DataBaseHelper.getConnection();
+        String sql = "select * from customer";
+        return DataBaseHelper.queryEntityList(Customer.class,sql,conn);
+    }
+
+    /**
      * 获取客户
      */
     public Customer getCustomer(Long id){
