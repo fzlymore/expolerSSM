@@ -39,17 +39,29 @@ public final class DataBaseHelper {
         }
     }
 
+    private static final ThreadLocal<Connection> CONNECTION_HOLDER = new ThreadLocal<>();
     /**
      * 获取数据库连接
      */
     public static Connection getConnection(){
-        Connection conn = null;
-        try {
-            conn= DriverManager.getConnection(URL,USERNAME,PASSWORD);
+        Connection conn = CONNECTION_HOLDER.get();
+        if (null == conn){
+            try {
+                conn=DriverManager.getConnection(URL,USERNAME,PASSWORD);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.error("get SqlConnection failure",e);
+                throw new RuntimeException(e);
+            } finally {
+              CONNECTION_HOLDER.set(conn);
+            }
         }
-        catch (SQLException e){
-            LOGGER.error("get SqlConnection failure",e);
-        }
+//        try {
+//            conn= DriverManager.getConnection(URL,USERNAME,PASSWORD);
+//        }
+//        catch (SQLException e){
+//            LOGGER.error("get SqlConnection failure",e);
+//        }
         return conn;
     }
 
