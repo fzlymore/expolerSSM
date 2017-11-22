@@ -68,12 +68,16 @@ public final class DataBaseHelper {
     /**
      * 关闭数据库连接
      */
-    public static void closeConnection(Connection conn){
+    public static void closeConnection(){
+        Connection conn = CONNECTION_HOLDER.get();
         if(conn!=null){
             try {
                 conn.close();
             }catch (SQLException e){
                 LOGGER.error("closeConnection failure",e);
+                throw new RuntimeException(e);
+            }finally {
+                CONNECTION_HOLDER.remove();
             }
         }
     }
@@ -82,15 +86,16 @@ public final class DataBaseHelper {
      * 查询实体列表
      */
     public static <T> List<T> queryEntityList(Class<T> entityClass,String sql,Object... params){
-        Connection conn = DataBaseHelper.getConnection();
         List<T> entityList = null;
         try {
-            entityList= QUERY_RUNNER.query(conn,sql,new BeanListHandler<T>(entityClass),params);
+            Connection conn = getConnection();
+            entityList= QUERY_RUNNER.query(conn,sql,new BeanListHandler<>(entityClass),params);
         } catch (SQLException e) {
             e.printStackTrace();
             LOGGER.error("query entity list failure",e);
+            throw new RuntimeException(e);
         } finally {
-            closeConnection(conn);
+            closeConnection();
         }
       return entityList;
     }
