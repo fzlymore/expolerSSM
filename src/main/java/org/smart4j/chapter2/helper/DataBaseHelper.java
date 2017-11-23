@@ -172,7 +172,7 @@ public final class DataBaseHelper {
             LOGGER.error("cant insert entity : fieldMap is empty");
             return false;
         }
-        String sql = "insert into" + getTableName(entityClass);
+        String sql = "insert into " + getTableName(entityClass);
         StringBuilder columns = new StringBuilder("(");
         StringBuilder values = new StringBuilder("(");
         for (String fieldName: fieldMap.keySet()) {
@@ -214,7 +214,7 @@ public final class DataBaseHelper {
     }
 
     public static <T>boolean deleteEntity(Class<T> entityClass,long id){
-        String sql = "DELETE FROM"+ getTableName(entityClass)+"where id = ?";
+        String sql = "DELETE FROM "+ getTableName(entityClass)+"where id = ?";
         return executeUpdate(sql,id)==1;
     }
 
