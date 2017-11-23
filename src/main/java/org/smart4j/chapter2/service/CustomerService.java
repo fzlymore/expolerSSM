@@ -81,7 +81,8 @@ public class CustomerService {
      */
     public boolean createCustomer (Map<String,Object> fieldMap){
         // TODO: 2017/11/21
-        return false;
+//        return false;
+        return DataBaseHelper.insertEntity(Customer.class,fieldMap);
     }
 
     /**
@@ -89,7 +90,8 @@ public class CustomerService {
      */
     public boolean updateCustomer (Long id, Map<String,Object> fieldMap){
         // TODO: 2017/11/21
-        return  false;
+//        return  false;
+        return DataBaseHelper.updateEntity(Customer.class,id,fieldMap);
     }
 
     /**
@@ -97,6 +99,7 @@ public class CustomerService {
      */
     public boolean deleteCustomer(Long id){
         // TODO: 2017/11/21
-        return  false;
+//        return  false;
+        return DataBaseHelper.deleteEntity(Customer.class,id);
     }
 }
