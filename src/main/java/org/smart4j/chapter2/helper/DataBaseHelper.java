@@ -1,7 +1,7 @@
 package org.smart4j.chapter2.helper;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.smart4j.chapter2.util.PropUtil;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,26 +25,39 @@ import java.util.Properties;
 public final class DataBaseHelper {
      private static final Logger LOGGER = LoggerFactory.getLogger(DataBaseHelper.class);
 
-    private static final String DRVIER;
-    private static final String URL;
-    private static final String USERNAME;
-    private static final String PASSWORD;
-    //使用dbUtils封装简化代码
-    private static final QueryRunner QUERY_RUNNER = new QueryRunner();
+//    private static final String DRVIER;
+//    private static final String URL;
+//    private static final String USERNAME;
+//    private static final String PASSWORD;
 
-    private static final ThreadLocal<Connection> CONNECTION_HOLDER = new ThreadLocal<>();
+
+    /**
+     *  使用dbUtils封装简化代码
+     */
+    private static final QueryRunner QUERY_RUNNER ;
+
+    private static final ThreadLocal<Connection> CONNECTION_HOLDER ;
+
+    /**
+     * dbcp的连接池
+     */
+    private static final BasicDataSource DATA_SOURCE;
 
     static {
+        CONNECTION_HOLDER = new ThreadLocal<>();
+
+        QUERY_RUNNER = new QueryRunner();
         Properties conf = PropUtil.loadProps("config.properties");
-        DRVIER=conf.getProperty("jdbc.driver");
-        URL=conf.getProperty("jdbc.url");
-        USERNAME=conf.getProperty("jdbc.username");
-        PASSWORD=conf.getProperty("jdbc.password");
-        try {
-            Class.forName(DRVIER);
-        }catch (Exception e){
-          LOGGER.error("cant load jdbc driver",e);
-        }
+        String driver =conf.getProperty("jdbc.driver");
+        String url =conf.getProperty("jdbc.url");
+        String username=conf.getProperty("jdbc.username");
+        String password=conf.getProperty("jdbc.password");
+
+        DATA_SOURCE = new BasicDataSource();
+        DATA_SOURCE.setDriverClassName(driver);
+        DATA_SOURCE.setUrl(url);
+        DATA_SOURCE.setUsername(username);
+        DATA_SOURCE.setPassword(password);
     }
 
     /**
@@ -55,7 +67,7 @@ public final class DataBaseHelper {
         Connection conn = CONNECTION_HOLDER.get();
         if(null==conn) {
             try {
-                conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+                conn = DATA_SOURCE.getConnection();
             } catch (SQLException e) {
                 LOGGER.error("get SqlConnection failure", e);
                 throw new RuntimeException(e);
@@ -66,39 +78,39 @@ public final class DataBaseHelper {
             return conn;
     }
 
-    /**
-     * 关闭数据库连接
-     */
-    public static void closeConnection(){
-        Connection conn = CONNECTION_HOLDER.get();
-        if(conn!=null){
-            try {
-                conn.close();
-            }catch (SQLException e){
-                LOGGER.error("closeConnection failure",e);
-                throw new RuntimeException(e);
-            }
-            finally {
-                CONNECTION_HOLDER.remove();
-            }
-        }
-    }
+//    /**
+//     * 关闭数据库连接
+//     */
+//    public static void closeConnection(){
+//        Connection conn = CONNECTION_HOLDER.get();
+//        if(conn!=null){
+//            try {
+//                conn.close();
+//            }catch (SQLException e){
+//                LOGGER.error("closeConnection failure",e);
+//                throw new RuntimeException(e);
+//            }
+//            finally {
+//                CONNECTION_HOLDER.remove();
+//            }
+//        }
+//    }
 
     /**
      * 查询实体列表
      */
     public static <T> List<T> queryEntityList(Class<T> entityClass,String sql,Object... params){
-        List<T> entityList = null;
+        List<T> entityList ;
         try {
             Connection conn = getConnection();
-            entityList= QUERY_RUNNER.query(conn,sql,new BeanListHandler<T>(entityClass),params);
+            entityList= QUERY_RUNNER.query(conn,sql,new BeanListHandler<>(entityClass),params);
         } catch (SQLException e) {
             e.printStackTrace();
             LOGGER.error("query entity list failure",e);
             throw new RuntimeException(e);
-        } finally {
+        } /*finally {
             closeConnection();
-        }
+        }*/
       return entityList;
     }
 
@@ -109,13 +121,13 @@ public final class DataBaseHelper {
         T entity;
         try{
             Connection conn = getConnection();
-            entity = QUERY_RUNNER.query(conn,sql,new BeanHandler<T>(entityClass),params);
+            entity = QUERY_RUNNER.query(conn,sql,new BeanHandler<>(entityClass),params);
         }catch (SQLException e){
              LOGGER.error("query entity is fail",e);
             throw new RuntimeException(e);
-        }finally {
+        }/*finally {
             closeConnection();
-        }
+        }*/
         return entity;
     }
 
