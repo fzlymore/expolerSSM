@@ -46,7 +46,7 @@ public class CustomerService {
             e.printStackTrace();
             LOGGER.error("excute sql failure",e);
         }finally {
-            DataBaseHelper.closeConnection(conn);
+            DataBaseHelper.closeConnection();
         }
         return  customerList;
     }
@@ -58,6 +58,14 @@ public class CustomerService {
         Connection conn = DataBaseHelper.getConnection();
         String sql = "select * from customer";
         return DataBaseHelper.queryEntityList(Customer.class,sql,conn);
+    }
+
+    /**
+     * 获取客户列表方法（改进dbutils后）
+     */
+    public List<Customer> getCustomerList1(){
+        String sql = "select * from customer";
+        return DataBaseHelper.queryEntityList(Customer.class,sql);
     }
 
     /**
@@ -73,7 +81,8 @@ public class CustomerService {
      */
     public boolean createCustomer (Map<String,Object> fieldMap){
         // TODO: 2017/11/21
-        return false;
+//        return false;
+        return DataBaseHelper.insertEntity(Customer.class,fieldMap);
     }
 
     /**
@@ -81,7 +90,8 @@ public class CustomerService {
      */
     public boolean updateCustomer (Long id, Map<String,Object> fieldMap){
         // TODO: 2017/11/21
-        return  false;
+//        return  false;
+        return DataBaseHelper.updateEntity(Customer.class,id,fieldMap);
     }
 
     /**
@@ -89,6 +99,7 @@ public class CustomerService {
      */
     public boolean deleteCustomer(Long id){
         // TODO: 2017/11/21
-        return  false;
+//        return  false;
+        return DataBaseHelper.deleteEntity(Customer.class,id);
     }
 }
