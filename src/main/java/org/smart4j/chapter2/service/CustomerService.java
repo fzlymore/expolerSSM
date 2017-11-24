@@ -45,9 +45,10 @@ public class CustomerService {
         } catch (SQLException e) {
             e.printStackTrace();
             LOGGER.error("excute sql failure",e);
-        }finally {
-            DataBaseHelper.closeConnection();
         }
+//        finally {
+//            DataBaseHelper.closeConnection();
+//        }
         return  customerList;
     }
 
@@ -64,7 +65,7 @@ public class CustomerService {
      * 获取客户列表方法（改进dbutils后）
      */
     public List<Customer> getCustomerList1(){
-        String sql = "select * from customer";
+        String sql = "SELECT * FROM customer";
         return DataBaseHelper.queryEntityList(Customer.class,sql);
     }
 

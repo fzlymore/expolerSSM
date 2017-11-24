@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smart4j.chapter2.util.PropUtil;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -103,14 +107,12 @@ public final class DataBaseHelper {
         List<T> entityList ;
         try {
             Connection conn = getConnection();
-            entityList= QUERY_RUNNER.query(conn,sql,new BeanListHandler<>(entityClass),params);
+            entityList= QUERY_RUNNER.query(conn,sql,new BeanListHandler<T>(entityClass),params);
         } catch (SQLException e) {
             e.printStackTrace();
             LOGGER.error("query entity list failure",e);
             throw new RuntimeException(e);
-        } /*finally {
-            closeConnection();
-        }*/
+        }
       return entityList;
     }
 
@@ -228,6 +230,21 @@ public final class DataBaseHelper {
     public static <T>boolean deleteEntity(Class<T> entityClass,long id){
         String sql = "DELETE FROM "+ getTableName(entityClass)+"where id = ?";
         return executeUpdate(sql,id)==1;
+    }
+
+    public static void executeSqlFile (String filePath){
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+        try {
+            String sql;
+            while ((sql=bufferedReader.readLine())!=null){
+                executeUpdate(sql);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.error("execute sql is failure",e);
+            throw new RuntimeException(e);
+        }
     }
 
 }
